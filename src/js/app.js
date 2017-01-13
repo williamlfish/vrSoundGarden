@@ -6,7 +6,6 @@ import {Entity, Scene} from 'aframe-react';
 import 'aframe-physics-components'
 import React from 'react';
 import ReactDOM from 'react-dom';
-import getUserMedia from 'getusermedia';
 import Ball from './components/Ball';
 import Camera from './components/Camera';
 import Text from './components/Text';
@@ -35,16 +34,14 @@ class VRScene extends React.Component {
     let dataArray = new Uint8Array(buffer);
 
 
-    getUserMedia({video:false, audio:true},(err, stream)=>{
-      if(err){
-        console.log(err);
-      }else{
+    navigator.mediaDevices.getUserMedia({video:false, audio:true}).then((stream)=>{
+
         let sound = audio.createMediaStreamSource(stream);
         // sound.connect(osc)
         // gain.connect(osc)
         sound.connect(analyser)
         // analyser.connect(audio.destination)
-      }
+
       let Xcount = 0
       let Ycount = 0
       let Zcount = 0
@@ -56,15 +53,7 @@ class VRScene extends React.Component {
           data = data/10
           if(data>13){
             Ycount+=0.005
-            Zcount+=0.01
-          }else if(data<=11)
-            Ycount-=0.001
-
-            Zcount -= 0.01;
-            if(Ycount<=0){
-              Ycount = 0
-              Zcount = 0
-            }
+          }
         })
         this.setState({y:Ycount, x:Xcount, z:Zcount})
 
