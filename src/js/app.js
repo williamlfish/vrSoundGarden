@@ -18,15 +18,16 @@ class VRScene extends React.Component {
       color: 'red',
       x:0,
       y:0,
-      z:0
+      z:0,
+      balls:[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,]
     };
   }
   componentDidMount(){
     this.getSound();
   }
+
   getSound(){
-    let audio = new (window.AudioContext || window.webkitAudioContext)();
-  ;
+    let audio = new (window.AudioContext || window.webkitAudioContext)();;
     let analyser = audio.createAnalyser()
     analyser.fftSize = 64;
     analyser.smoothingTimeConstant = 1;
@@ -50,32 +51,45 @@ class VRScene extends React.Component {
       let Zcount = 0
 
       setInterval(()=>{
+
         analyser.getByteTimeDomainData(dataArray)
         dataArray.forEach(data=>{
           data = data/10
           if(data>13){
             Ycount+=0.005
+          }if(Ycount > 6){
+            Ycount = 0
           }
         })
         this.setState({y:Ycount, x:Xcount, z:Zcount})
+
       },26)
-    }).catch(err)=>{
+    }).catch(err=>{
       console.log(err.message);
-    }
+    });
 
   }
 
 
 
   render () {
-    let ballP = `boundingBox: .5 .5 .5; mass: 3; velocity:0 ${this.state.y}0`
+    let aBall = null
+    let ballP = `boundingBox: 1 1 1; mass: 3; velocity:0 ${this.state.y}0`
     return (
-      <Scene physics-world="gravity: 0 -9.8 0">
+      <Scene physics-world="gravity: 0 -9.8 0" >
         <Sky opacity='.6' color='#90C3D4'/>
         <Camera />
-        <Ball phys={ballP} pos={[0, 0 ,-5]} />
-        <Ball phys={ballP} pos={[5, 3 ,-3]} />
-        <Ball phys={ballP} pos={[-3, 0 ,-3]} />
+        {this.state.balls.map((ball, i)=>{
+          let num = Math.floor(Math.random() * (5 - 0 + 1 )) + 1
+          let num2 = Math.floor(Math.random() * (5 - 0 + 1 )) + 5
+          let num3 = Math.floor(Math.random() * (5 - 0 + 1 )) + 3
+          return <Ball key={i} phys={ballP} pos={[num, num2, num3]} ref={ball=>{aBall = ball}} >
+
+          </Ball>
+        })}
+        {/* <Ball  phys={ballP} pos={[0, 0 ,-5]} />
+        <Ball phys={ballP} pos={[0, 5 ,-5]} />
+        <Ball phys={ballP} pos={[5, 0 ,-3]} /> */}
         <Entity
         geometry="primitive: box; depth: 50; height: 0.1; width: 50"
                   material="color: #2E3837"
