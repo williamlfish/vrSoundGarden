@@ -51,7 +51,6 @@ class VRScene extends React.Component {
 
       setInterval(()=>{
         analyser.getByteTimeDomainData(dataArray)
-
         dataArray.forEach(data=>{
           data = data/10
           if(data>13){
@@ -59,11 +58,11 @@ class VRScene extends React.Component {
           }
         })
         this.setState({y:Ycount, x:Xcount, z:Zcount})
-
       },26)
+    }).catch(err)=>{
+      console.log(err.message);
+    }
 
-
-    })
   }
 
 
@@ -82,7 +81,6 @@ class VRScene extends React.Component {
                   material="color: #2E3837"
                   physics-body="mass: 0; boundingBox: 50 0.1 50" position={[0,-2,2]}
                 />
-
       </Scene>
     );
   }
