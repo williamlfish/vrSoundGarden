@@ -33,7 +33,10 @@ class VRScene extends React.Component {
     let buffer = analyser.frequencyBinCount;
     let dataArray = new Uint8Array(buffer);
 
-
+    navigator.mediaDevices.getUserMedia =   navigator.mediaDevices.getUserMedia ||
+                                            navigator.mediaDevices.webkitGetUserMedia ||
+                                            navigator.mediaDevices.mozGetUserMedia ||
+                                            navigator.mediaDevices.msGetUserMedia;
     navigator.mediaDevices.getUserMedia({video:false, audio:true}).then((stream)=>{
 
         let sound = audio.createMediaStreamSource(stream);
