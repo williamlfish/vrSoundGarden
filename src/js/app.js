@@ -82,8 +82,8 @@ class VRScene extends React.Component {
         {this.state.balls.map((ball, i)=>{
           let num = Math.floor(Math.random() * (5 - 0 + 1 )) + 1
           let num2 = Math.floor(Math.random() * (5 - 0 + 1 )) + 5
-          let num3 = Math.floor(Math.random() * (5 - 0 + 1 )) + 3
-          return <Ball key={i} phys={ballP} pos={[num, num2, num3]} ref={ball=>{aBall = ball}} >
+          let num3 = Math.random() * (2 - .01) + .01
+          return <Ball key={i} phys={ballP} pos={[num3, 0, -10]} ref={ball=>{aBall = ball}} >
 
           </Ball>
         })}
@@ -91,7 +91,7 @@ class VRScene extends React.Component {
         <Ball phys={ballP} pos={[0, 5 ,-5]} />
         <Ball phys={ballP} pos={[5, 0 ,-3]} /> */}
         <Entity
-        geometry="primitive: box; depth: 50; height: 0.1; width: 50"
+        geometry="primitive: box; depth: 100; height: 0.1; width: 100"
                   material="color: #2E3837"
                   physics-body="mass: 0; boundingBox: 50 0.1 50" position={[0,-2,2]}
                 />
