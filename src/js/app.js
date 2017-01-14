@@ -16,6 +16,11 @@ class VRScene extends React.Component {
     super(props);
     this.state = {
       color: 'red',
+      ourFreq:[],
+      lowFreqArry:[],
+      medLowFreqArry:[],
+      medHighFreqArry:[],
+      highFreqArry:[],
       x:0,
       y:0,
       z:0,
@@ -27,12 +32,17 @@ class VRScene extends React.Component {
   }
 
   getSound(){
-    let audio = new (window.AudioContext || window.webkitAudioContext)();;
-    let analyser = audio.createAnalyser()
-    analyser.fftSize = 64;
-    analyser.smoothingTimeConstant = 1;
-    let buffer = analyser.frequencyBinCount;
+    //we init the AudioContext
+    const audio = new (window.AudioContext || window.webkitAudioContext)();
+    console.log(audio.sampleRate);
+    //this analyser is used to get data
+    const analyser = audio.createAnalyser()
+    analyser.fftSize = 1024;
+    const buffer = analyser.frequencyBinCount;
+    console.log(buffer);
+    //that data is pushed to an array
     let dataArray = new Uint8Array(buffer);
+    console.log(dataArray.length);
 
     navigator.mediaDevices.getUserMedia =   navigator.mediaDevices.getUserMedia ||
                                             navigator.mediaDevices.webkitGetUserMedia ||
@@ -40,30 +50,59 @@ class VRScene extends React.Component {
                                             navigator.mediaDevices.msGetUserMedia;
     navigator.mediaDevices.getUserMedia({video:false, audio:true}).then((stream)=>{
 
-        let sound = audio.createMediaStreamSource(stream);
-        // sound.connect(osc)
-        // gain.connect(osc)
-        sound.connect(analyser)
-        // analyser.connect(audio.destination)
+        const sound = audio.createMediaStreamSource(stream);
+          // let merge = audio.createChannelMerger(2);
+
+          // sound.connect(osc)
+          // gain.connect(osc)
+          sound.connect(analyser)
+
+          // lowFilter.frequency.value = 440;
+        // sound.connect(audio.destination)
 
       let Xcount = 0
       let Ycount = 0
       let Zcount = 0
-
+      const freqSize = audio.sampleRate/analyser.fftSize;
+      console.log('freq size is' ,freqSize);
       setInterval(()=>{
-
-        analyser.getByteTimeDomainData(dataArray)
-        dataArray.forEach(data=>{
-          data = data/10
-          if(data>13){
-            Ycount+=0.005
-          }if(Ycount > 6){
-            Ycount = 0
+        analyser.getByteFrequencyData(dataArray);
+        let ourFreq =[]
+        let lowFreqArry = [];
+        let medLowFreqArry = [];
+        let medHighFreqArry = [];
+        let highFreqArry = [];
+        dataArray.forEach((data, i)=>{
+          if(i<=97){
+            ourFreq.push(data);
           }
-        })
-        this.setState({y:Ycount, x:Xcount, z:Zcount})
 
-      },26)
+          // if(medLowFreqArry[i]>50){
+          //   Ycount+= .005;
+          // }else if(medLowFreqArry[i]<50){
+          //   Ycount=0
+          // }
+        })
+        ourFreq.forEach((freq, i )=>{
+            if(i<=24){
+              lowFreqArry.push(freq)
+            }else if(i<=42){
+              medLowFreqArry.push(freq)
+            }else if(i<=72){
+              medHighFreqArry.push(freq)
+            }else if(i<=96){
+              highFreqArry.push(freq)
+            }
+        });
+        this.setState({
+          y:Ycount,
+          lowFreqArry:lowFreqArry,
+          medLowFreqArry:medLowFreqArry,
+          medHighFreqArry:medHighFreqArry,
+          highFreqArry:highFreqArry
+        });
+
+      },16)
     }).catch(err=>{
       console.log(err.message);
     });
@@ -73,6 +112,7 @@ class VRScene extends React.Component {
 
 
   render () {
+    console.log(this.state.lowFreqArry);
     let aBall = null
     let ballP = `boundingBox: 1 1 1; mass: 3; velocity:0 ${this.state.y}0`
     return (
