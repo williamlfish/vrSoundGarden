@@ -108,11 +108,11 @@
 	    var _this = _possibleConstructorReturn(this, (VRScene.__proto__ || Object.getPrototypeOf(VRScene)).call(this, props));
 
 	    _this.state = {
+	      fftData: [],
 	      color: 'red',
 	      ourFreq: [],
 	      lowFreqArry: [],
-	      medLowFreqArry: [],
-	      medHighFreqArry: [],
+	      medFreqArry: [],
 	      highFreqArry: [],
 	      hiCount: 0,
 	      medCount: 0,
@@ -138,71 +138,48 @@
 	      var analyser = audio.createAnalyser();
 	      analyser.fftSize = 1024;
 	      var buffer = analyser.frequencyBinCount;
-	      console.log(buffer);
 	      //that data is pushed to an array
 	      var dataArray = new Uint8Array(buffer);
-	      console.log(dataArray.length);
 
 	      navigator.mediaDevices.getUserMedia = navigator.mediaDevices.getUserMedia || navigator.mediaDevices.webkitGetUserMedia || navigator.mediaDevices.mozGetUserMedia || navigator.mediaDevices.msGetUserMedia;
 	      navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then(function (stream) {
 
 	        var sound = audio.createMediaStreamSource(stream);
-	        // let merge = audio.createChannelMerger(2);
-
-	        // sound.connect(osc)
-	        // gain.connect(osc)
 	        sound.connect(analyser);
-	        var lowFreqArry = [];
-	        var medLowFreqArry = [];
-	        var medHighFreqArry = [];
+
 	        var hiCount = 0;
 	        var medCount = 0;
 	        var lowCount = 0;
-	        // dataArray.forEach((data, i)=>{
-	        //   if(i<=24){
-	        //     lowFreqArry.push(data)
-	        //   }else if(i<=42){
-	        //     if(data>150){
-	        //       Ycount += .005
-	        //     }
-	        //     medLowFreqArry.push(data)
-	        //   }else if(i<=72){
-	        //     medHighFreqArry.push(data)
-	        //   }
-	        // })
+
 	        var freqSize = audio.sampleRate / analyser.fftSize;
 	        console.log('freq size is ', freqSize);
 	        setInterval(function () {
 	          analyser.getByteFrequencyData(dataArray);
+	          var lowFreqArry = [];
+	          var medFreqArry = [];
+	          var highFreqArry = [];
 	          dataArray.forEach(function (data, i) {
 	            if (i <= 24) {
-	              if (data > 75) {
-	                hiCount += .005;
-	              } else {
-	                hiCount = 0;
-	              }
+	              highFreqArry.push(data);
 	            } else if (i <= 42) {
-	              if (data > 75) {
-	                medCount += .005;
-	              } else {
-	                medCount = 0;
-	              }
+	              medFreqArry.push(data);
 	            } else if (i <= 72) {
-	              if (data > 75) {
-	                lowCount += .005;
-	              } else {
-	                lowCount = 0;
-	              }
+	              lowFreqArry.push(data);
 	            }
 	          });
 
-	          _this2.setState({ hiCount: hiCount, medCount: medCount, lowCount: lowCount });
-	        }, 16);
-	        _this2.setState({
-	          lowFreqArry: lowFreqArry,
-	          medLowFreqArry: medLowFreqArry,
-	          medHighFreqArry: medHighFreqArry
-	        });
+	          _this2.setState({
+	            fftData: dataArray,
+	            lowFreqArry: lowFreqArry,
+	            medFreqArry: medFreqArry,
+	            highFreqArry: highFreqArry
+	          });
+	        }, 17);
+	        // this.setState({
+	        //   lowFreqArry:lowFreqArry,
+	        //   medLowFreqArry:medLowFreqArry,
+	        //   medHighFreqArry:medHighFreqArry,
+	        // });
 	      }).catch(function (err) {
 	        console.log(err.message);
 	      });
@@ -211,37 +188,41 @@
 	    key: 'render',
 	    value: function render() {
 	      var aBall = null;
-	      var ballh = 'boundingBox: 1 1 1; mass: 3; velocity:0 ' + this.state.hiCount + '0';
-	      var ballm = 'boundingBox: 1 1 1; mass: 3; velocity:0 ' + this.state.medCount + '0';
-	      var balll = 'boundingBox: 1 1 1; mass: 3; velocity:0 ' + this.state.lowCount + '0';
+
 	      return _react2.default.createElement(
 	        _aframeReact.Scene,
-	        { 'physics-world': 'gravity: 0 -9.8 0' },
+	        null,
 	        _react2.default.createElement(_Sky2.default, { opacity: '.6', color: '#90C3D4' }),
 	        _react2.default.createElement(_Camera2.default, null),
-	        _react2.default.createElement(_aframeReact.Entity, {
-	          geometry: 'primitive: box;',
-	          material: 'color:red; opacity:.5',
-	          'physics-body': ballh,
-	          position: [2, 0, -5]
-	        }),
-	        _react2.default.createElement(_aframeReact.Entity, {
-	          geometry: 'primitive: box;',
-	          material: 'color:#FCE562; opacity:.5',
-	          'physics-body': ballm,
-	          position: [0, 0, -5]
-	        }),
-	        _react2.default.createElement(_aframeReact.Entity, {
-	          geometry: 'primitive: box;',
-	          material: 'color:#62FC98; opacity:.5',
-	          'physics-body': balll,
-	          position: [-2, 0, -5]
-	        }),
-	        _react2.default.createElement(_aframeReact.Entity, {
-	          geometry: 'primitive: box; depth: 100; height: 0.1; width: 100',
-	          material: 'color: #2E3837',
-	          'physics-body': 'mass: 0; boundingBox: 50 0.1 50', position: [0, -2, 2]
-	        })
+	        _react2.default.createElement(
+	          _aframeReact.Entity,
+	          { position: [0, 0, -40] },
+	          //array with the hightest freq to crete red blocks
+	          Array.map(this.state.highFreqArry, function (n, i) {
+	            return _react2.default.createElement(_aframeReact.Entity, {
+	              key: i,
+	              geometry: 'primitive: box;',
+	              material: 'color:red; opacity:.5',
+	              position: [i - 10, n / 8, 0]
+	            });
+	          }),
+	          Array.map(this.state.medFreqArry, function (n, i) {
+	            return _react2.default.createElement(_aframeReact.Entity, {
+	              key: i,
+	              geometry: 'primitive: sphere;',
+	              material: 'color:blue; opacity:.5',
+	              position: [i, n / 10, 3]
+	            });
+	          }),
+	          Array.map(this.state.highFreqArry, function (n, i) {
+	            return _react2.default.createElement(_aframeReact.Entity, {
+	              key: i,
+	              geometry: 'primitive: torus;',
+	              material: 'color:green; opacity:.5',
+	              position: [i - 8, n / 50, 5]
+	            });
+	          })
+	        )
 	      );
 	    }
 	  }]);
