@@ -21,10 +21,9 @@ class VRScene extends React.Component {
       medLowFreqArry:[],
       medHighFreqArry:[],
       highFreqArry:[],
-      x:0,
-      y:0,
-      z:0,
-      balls:[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,]
+      hiCount:0,
+      medCount:0,
+      lowCount:0,
     };
   }
   componentDidMount(){
@@ -56,53 +55,52 @@ class VRScene extends React.Component {
           // sound.connect(osc)
           // gain.connect(osc)
           sound.connect(analyser)
-
-          // lowFilter.frequency.value = 440;
-        // sound.connect(audio.destination)
-
-      let Xcount = 0
-      let Ycount = 0
-      let Zcount = 0
+      let lowFreqArry = [];
+      let medLowFreqArry = [];
+      let medHighFreqArry = [];
+      let hiCount = 0
+      let medCount = 0
+      let lowCount = 0
+      // dataArray.forEach((data, i)=>{
+      //   if(i<=24){
+      //     lowFreqArry.push(data)
+      //   }else if(i<=42){
+      //     if(data>150){
+      //       Ycount += .005
+      //     }
+      //     medLowFreqArry.push(data)
+      //   }else if(i<=72){
+      //     medHighFreqArry.push(data)
+      //   }
+      // })
       const freqSize = audio.sampleRate/analyser.fftSize;
-      console.log('freq size is' ,freqSize);
+      console.log('freq size is ' ,freqSize);
       setInterval(()=>{
         analyser.getByteFrequencyData(dataArray);
-        let ourFreq =[]
-        let lowFreqArry = [];
-        let medLowFreqArry = [];
-        let medHighFreqArry = [];
-        let highFreqArry = [];
         dataArray.forEach((data, i)=>{
-          if(i<=97){
-            ourFreq.push(data);
+          if(i<=24){
+            if(data>75){
+              hiCount += .005
+            }else{hiCount = 0}
+          }else if(i<=42){
+            if(data>75){
+              medCount += .005
+            }else{medCount = 0}
+          }else if(i<=72){
+            if(data>75){
+              lowCount += .005
+            }else{lowCount= 0}
           }
-
-          // if(medLowFreqArry[i]>50){
-          //   Ycount+= .005;
-          // }else if(medLowFreqArry[i]<50){
-          //   Ycount=0
-          // }
-        })
-        ourFreq.forEach((freq, i )=>{
-            if(i<=24){
-              lowFreqArry.push(freq)
-            }else if(i<=42){
-              medLowFreqArry.push(freq)
-            }else if(i<=72){
-              medHighFreqArry.push(freq)
-            }else if(i<=96){
-              highFreqArry.push(freq)
-            }
-        });
-        this.setState({
-          y:Ycount,
-          lowFreqArry:lowFreqArry,
-          medLowFreqArry:medLowFreqArry,
-          medHighFreqArry:medHighFreqArry,
-          highFreqArry:highFreqArry
         });
 
+        this.setState({hiCount:hiCount,medCount:medCount,lowCount:lowCount})
       },16)
+      this.setState({
+        lowFreqArry:lowFreqArry,
+        medLowFreqArry:medLowFreqArry,
+        medHighFreqArry:medHighFreqArry,
+      });
+
     }).catch(err=>{
       console.log(err.message);
     });
@@ -112,21 +110,33 @@ class VRScene extends React.Component {
 
 
   render () {
-    console.log(this.state.lowFreqArry);
     let aBall = null
-    let ballP = `boundingBox: 1 1 1; mass: 3; velocity:0 ${this.state.y}0`
+    let ballh = `boundingBox: 1 1 1; mass: 3; velocity:0 ${this.state.hiCount}0`
+    let ballm = `boundingBox: 1 1 1; mass: 3; velocity:0 ${this.state.medCount}0`
+    let balll = `boundingBox: 1 1 1; mass: 3; velocity:0 ${this.state.lowCount}0`
     return (
       <Scene physics-world="gravity: 0 -9.8 0" >
         <Sky opacity='.6' color='#90C3D4'/>
         <Camera />
-        {this.state.balls.map((ball, i)=>{
-          let num = Math.floor(Math.random() * (5 - 0 + 1 )) + 1
-          let num2 = Math.floor(Math.random() * (5 - 0 + 1 )) + 5
-          let num3 = Math.random() * (2 - .01) + .01
-          return <Ball key={i} phys={ballP} pos={[num3, 0, -10]} ref={ball=>{aBall = ball}} >
+        <Entity
+          geometry='primitive: box;'
+          material='color:red; opacity:.5'
+          physics-body={ballh}
+          position={[2,0,-5]}
+        />
+        <Entity
+          geometry='primitive: box;'
+          material='color:#FCE562; opacity:.5'
+          physics-body={ballm}
+          position={[0,0,-5]}
+        />
+        <Entity
+          geometry='primitive: box;'
+          material='color:#62FC98; opacity:.5'
+          physics-body={balll}
+          position={[-2,0,-5]}
+        />
 
-          </Ball>
-        })}
         {/* <Ball  phys={ballP} pos={[0, 0 ,-5]} />
         <Ball phys={ballP} pos={[0, 5 ,-5]} />
         <Ball phys={ballP} pos={[5, 0 ,-3]} /> */}
