@@ -99,22 +99,24 @@ class VRScene extends React.Component {
       <Scene >
         <Sky opacity='.6' color='#90C3D4'/>
         <Camera />
+        {/* <Entity light="type: hemisphere; color: #33C; groundColor: #3C3; intensity: 2" /> */}
 
-        <Entity position={[0,0,-40]}>
+        <Entity position={[0,0,-30]}>
           { //array with the hightest freq to crete red blocks
             Array.map(this.state.highFreqArry, (n, i) => <Entity
               key={i}
               geometry='primitive: box;'
-              material='color:red; opacity:.5'
+              material={{color:'red', opacity:n/1000}}
               position={[i-10 ,n/8,0]}
             />)
           }
           {
             Array.map(this.state.medFreqArry, (n, i)=> <Entity
+
             key={i}
             geometry='primitive: sphere;'
-            material='color:blue; opacity:.5'
-            position={[i ,n/10,3]}
+            material={{color:'#90C3D4'}}
+            position={[(-i+8)*3 ,0 ,n/10]}
           />)
           }
           {
@@ -122,9 +124,10 @@ class VRScene extends React.Component {
             key={i}
             geometry='primitive: torus;'
             material='color:green; opacity:.5'
-            position={[i-8 ,n/50,5]}
+            position={[i-8 ,n/50,n/15]}
           />)
           }
+          {/* <Entity geometry={{primitive:'box', depth:100, }} */}
         </Entity>
 
 
