@@ -15,11 +15,11 @@ class VRScene extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      fftData: [],
       color: 'red',
       ourFreq:[],
       lowFreqArry:[],
-      medLowFreqArry:[],
-      medHighFreqArry:[],
+      medFreqArry:[],
       highFreqArry:[],
       hiCount:0,
       medCount:0,
@@ -38,10 +38,8 @@ class VRScene extends React.Component {
     const analyser = audio.createAnalyser()
     analyser.fftSize = 1024;
     const buffer = analyser.frequencyBinCount;
-    console.log(buffer);
     //that data is pushed to an array
     let dataArray = new Uint8Array(buffer);
-    console.log(dataArray.length);
 
     navigator.mediaDevices.getUserMedia =   navigator.mediaDevices.getUserMedia ||
                                             navigator.mediaDevices.webkitGetUserMedia ||
@@ -49,57 +47,42 @@ class VRScene extends React.Component {
                                             navigator.mediaDevices.msGetUserMedia;
     navigator.mediaDevices.getUserMedia({video:false, audio:true}).then((stream)=>{
 
-        const sound = audio.createMediaStreamSource(stream);
-          // let merge = audio.createChannelMerger(2);
+      const sound = audio.createMediaStreamSource(stream);
+      sound.connect(analyser)
 
-          // sound.connect(osc)
-          // gain.connect(osc)
-          sound.connect(analyser)
-      let lowFreqArry = [];
-      let medLowFreqArry = [];
-      let medHighFreqArry = [];
       let hiCount = 0
       let medCount = 0
       let lowCount = 0
-      // dataArray.forEach((data, i)=>{
-      //   if(i<=24){
-      //     lowFreqArry.push(data)
-      //   }else if(i<=42){
-      //     if(data>150){
-      //       Ycount += .005
-      //     }
-      //     medLowFreqArry.push(data)
-      //   }else if(i<=72){
-      //     medHighFreqArry.push(data)
-      //   }
-      // })
+
       const freqSize = audio.sampleRate/analyser.fftSize;
       console.log('freq size is ' ,freqSize);
       setInterval(()=>{
         analyser.getByteFrequencyData(dataArray);
+        let lowFreqArry = [];
+        let medFreqArry = [];
+        let highFreqArry = [];
         dataArray.forEach((data, i)=>{
           if(i<=24){
-            if(data>75){
-              hiCount += .005
-            }else{hiCount = 0}
+            highFreqArry.push(data)
           }else if(i<=42){
-            if(data>75){
-              medCount += .005
-            }else{medCount = 0}
+            medFreqArry.push(data)
           }else if(i<=72){
-            if(data>75){
-              lowCount += .005
-            }else{lowCount= 0}
+            lowFreqArry.push(data)
           }
         });
 
-        this.setState({hiCount:hiCount,medCount:medCount,lowCount:lowCount})
-      },16)
-      this.setState({
-        lowFreqArry:lowFreqArry,
-        medLowFreqArry:medLowFreqArry,
-        medHighFreqArry:medHighFreqArry,
-      });
+        this.setState({
+          fftData: dataArray,
+          lowFreqArry:lowFreqArry,
+          medFreqArry:medFreqArry,
+          highFreqArry: highFreqArry,
+        })
+      },17)
+      // this.setState({
+      //   lowFreqArry:lowFreqArry,
+      //   medLowFreqArry:medLowFreqArry,
+      //   medHighFreqArry:medHighFreqArry,
+      // });
 
     }).catch(err=>{
       console.log(err.message);
@@ -111,40 +94,40 @@ class VRScene extends React.Component {
 
   render () {
     let aBall = null
-    let ballh = `boundingBox: 1 1 1; mass: 3; velocity:0 ${this.state.hiCount}0`
-    let ballm = `boundingBox: 1 1 1; mass: 3; velocity:0 ${this.state.medCount}0`
-    let balll = `boundingBox: 1 1 1; mass: 3; velocity:0 ${this.state.lowCount}0`
+
     return (
-      <Scene physics-world="gravity: 0 -9.8 0" >
+      <Scene >
         <Sky opacity='.6' color='#90C3D4'/>
         <Camera />
-        <Entity
-          geometry='primitive: box;'
-          material='color:red; opacity:.5'
-          physics-body={ballh}
-          position={[2,0,-5]}
-        />
-        <Entity
-          geometry='primitive: box;'
-          material='color:#FCE562; opacity:.5'
-          physics-body={ballm}
-          position={[0,0,-5]}
-        />
-        <Entity
-          geometry='primitive: box;'
-          material='color:#62FC98; opacity:.5'
-          physics-body={balll}
-          position={[-2,0,-5]}
-        />
 
-        {/* <Ball  phys={ballP} pos={[0, 0 ,-5]} />
-        <Ball phys={ballP} pos={[0, 5 ,-5]} />
-        <Ball phys={ballP} pos={[5, 0 ,-3]} /> */}
-        <Entity
-        geometry="primitive: box; depth: 100; height: 0.1; width: 100"
-                  material="color: #2E3837"
-                  physics-body="mass: 0; boundingBox: 50 0.1 50" position={[0,-2,2]}
-                />
+        <Entity position={[0,0,-20]}>
+          { //array with the hightest freq to crete red blocks
+            Array.map(this.state.highFreqArry, (n, i) => <Entity
+              key={i}
+              geometry='primitive: box;'
+              material='color:red; opacity:.5'
+              position={[i-10 ,n/50,0]}
+            />)
+          }
+          {
+            Array.map(this.state.medFreqArry, (n, i)=> <Entity
+            key={i}
+            geometry='primitive: sphere;'
+            material='color:blue; opacity:.5'
+            position={[i ,n/50,3]}
+          />)
+          }
+          {
+            Array.map(this.state.highFreqArry, (n, i)=> <Entity
+            key={i}
+            geometry='primitive: torus;'
+            material='color:green; opacity:.5'
+            position={[i-20 ,n/50,5]}
+          />)
+          }
+        </Entity>
+
+
       </Scene>
     );
   }
