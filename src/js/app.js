@@ -107,7 +107,7 @@ class VRScene extends React.Component {
               key={i}
               geometry='primitive: box;'
               material={{color:'red', opacity:n/1000}}
-              position={[i-10 ,n/8,0]}
+              position={[i-10 ,n/8,3]}
             />)
           }
           {
