@@ -196,14 +196,14 @@
 	        _react2.default.createElement(_Camera2.default, null),
 	        _react2.default.createElement(
 	          _aframeReact.Entity,
-	          { position: [0, 0, -30] },
+	          { position: [0, 0, -25] },
 	          //array with the hightest freq to crete red blocks
 	          Array.map(this.state.highFreqArry, function (n, i) {
 	            return _react2.default.createElement(_aframeReact.Entity, {
 	              key: i,
 	              geometry: 'primitive: box;',
 	              material: { color: 'red', opacity: n / 1000 },
-	              position: [i - 10, n / 8, 3]
+	              position: [i - 10, n / 8, 0]
 	            });
 	          }),
 	          Array.map(this.state.medFreqArry, function (n, i) {

@@ -101,13 +101,13 @@ class VRScene extends React.Component {
         <Camera />
         {/* <Entity light="type: hemisphere; color: #33C; groundColor: #3C3; intensity: 2" /> */}
 
-        <Entity position={[0,0,-30]}>
+        <Entity position={[0,0,-25]}>
           { //array with the hightest freq to crete red blocks
             Array.map(this.state.highFreqArry, (n, i) => <Entity
               key={i}
               geometry='primitive: box;'
               material={{color:'red', opacity:n/1000}}
-              position={[i-10 ,n/8,3]}
+              position={[i-10 ,n/8,0]}
             />)
           }
           {
