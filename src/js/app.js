@@ -16,8 +16,8 @@ class VRScene extends React.Component {
     super(props);
     this.state = {
       fftData: [],
+      octaves:[],
       color: 'red',
-      ourFreq:[],
       lowFreqArry:[],
       medFreqArry:[],
       highFreqArry:[],
@@ -36,10 +36,11 @@ class VRScene extends React.Component {
     console.log(audio.sampleRate);
     //this analyser is used to get data
     const analyser = audio.createAnalyser()
-    analyser.fftSize = 1024;
+    analyser.fftSize = 4096;
     const buffer = analyser.frequencyBinCount;
     //that data is pushed to an array
-    let dataArray = new Uint8Array(buffer);
+    let dataArray = new Uint8Array(buffer/4);
+    console.log(dataArray.length);
 
     navigator.mediaDevices.getUserMedia =   navigator.mediaDevices.getUserMedia ||
                                             navigator.mediaDevices.webkitGetUserMedia ||
@@ -53,29 +54,134 @@ class VRScene extends React.Component {
       let hiCount = 0
       let medCount = 0
       let lowCount = 0
-
-      const freqSize = audio.sampleRate/analyser.fftSize;
-      console.log('freq size is ' ,freqSize);
+      let dataMap = {}
+      let freqSize = audio.sampleRate/analyser.fftSize;
       setInterval(()=>{
-        analyser.getByteFrequencyData(dataArray);
-        let lowFreqArry = [];
-        let medFreqArry = [];
-        let highFreqArry = [];
-        dataArray.forEach((data, i)=>{
-          if(i<=24){
-            highFreqArry.push(data)
-          }else if(i<=42){
-            medFreqArry.push(data)
-          }else if(i<=72){
-            lowFreqArry.push(data)
-          }
-        });
 
+        analyser.getByteFrequencyData(dataArray);
+        let freqArry = []
+
+
+        dataArray.forEach((data, i)=>{
+            let high = null;
+            let med = null;
+            let low = null;
+            let lowLow = null;
+            let freq = freqSize * i;
+            let element = null;
+            if(i<=128){
+              high = <Entity
+              key={'h' + i}
+              geometry='primitive: sphere;'
+              material={{color:'#56AEB0', opacity:data/10}}
+              position={[i - 30, -4 + -(data/8), -20]}
+            />
+            }else if(i<=256){
+              med = <Entity
+              key={'m' + i }
+              geometry='primitive: sphere;'
+              material={{color:'#56B056', opacity:data/10}}
+              position={[i- 148 ,-4 -(data/8),-20 + data/8]}
+            />
+            }else if(i<=384){
+              low = <Entity
+              key={'l' +i }
+              geometry='primitive: box;'
+              material={{color:'#D4CB4C', opacity:data/10}}
+              position={[i - 486,-4 -(data/8),-20 + data/8]}
+            />
+            }else if(i<=512){
+              lowLow =<Entity
+              key={'ll'+ i}
+              geometry='primitive: torus;'
+              material={{color:'#EB7C5E', opacity:data/10}}
+              position={[i - 404,-4 -(data/8),-20 + data/8]}
+            />
+            }
+            if(freq <= 30.87 ){
+              element= (<Entity
+              key={i}
+              geometry='primitive: box;'
+              material={{color:'#FA0230'}}
+              position={[17,data/15,data/8]}
+            />)
+          }if(freq <= 61.74 && freq >= 32.70){
+            element = (<Entity
+              key={i}
+              geometry='primitive: box;'
+              material={{color:'#ED6F87', opacity:.5}}
+              position={[20,data/15,data/8]}
+            />)
+          }if(freq <= 123.47 && freq >= 65.41){
+            element = (<Entity
+              key={i}
+              geometry='primitive: box;'
+              material='color:#ED6FDA; opacity:.5'
+              position={[23,data/15,data/8]}
+            />)
+
+          }if(freq <= 246.94 && freq >= 130.81){
+            element = (<Entity
+              key={i}
+              geometry='primitive: box;'
+              material='color:#DA6FED; opacity:.5'
+              position={[26 ,data/15,data/8]}
+            />)
+
+          }if(freq <= 493.88 && freq >= 261.63 ){
+            element = (<Entity
+              key={i}
+              geometry='primitive: box;'
+              material='color:#936FED; opacity:.5'
+              position={[29,data/15,data/8]}
+            />)
+
+          }if(freq <= 987.77 && freq >= 523.25){
+            element = (<Entity
+              key={i}
+              geometry='primitive: box;'
+              material='color:#6F7AED; opacity:.5'
+              position={[31,data/15,data/8]}
+            />)
+
+          }if(freq <= 1975.53 && freq >= 1046.50){
+            element = (<Entity
+              key={i}
+              geometry='primitive: box;'
+              material='color:#6FA4ED; opacity:.5'
+              position={[34,data/15,data/8]}
+            />)
+
+          }if(freq <= 3951.07 && freq >= 2093){
+            element = (<Entity
+              key={i}
+              geometry='primitive: box;'
+              material='color:#E1F50C; opacity:.5'
+              position={[37,data/15,data/8]}
+            />)
+
+          }if(freq >= 4186.01){
+            element = (<Entity
+              key={i}
+              geometry='primitive: box;'
+              material='color:#F5880C; opacity:.5'
+              position={[40,data/15,data/8]}
+            />)
+            }
+            freqArry.push(
+              {
+              amount:data,
+              freq:freq,
+              element:element,
+              high:high,
+              med:med,
+              low:low,
+              lowLow:lowLow
+              }
+          );
+        });
         this.setState({
-          fftData: dataArray,
-          lowFreqArry:lowFreqArry,
-          medFreqArry:medFreqArry,
-          highFreqArry: highFreqArry,
+          fftData:freqArry
         })
       },17)
       // this.setState({
@@ -83,7 +189,6 @@ class VRScene extends React.Component {
       //   medLowFreqArry:medLowFreqArry,
       //   medHighFreqArry:medHighFreqArry,
       // });
-
     }).catch(err=>{
       console.log(err.message);
     });
@@ -93,41 +198,27 @@ class VRScene extends React.Component {
 
 
   render () {
-    let aBall = null
-
     return (
       <Scene >
         <Sky opacity='.6' color='#90C3D4'/>
         <Camera />
-        {/* <Entity light="type: hemisphere; color: #33C; groundColor: #3C3; intensity: 2" /> */}
+        <Entity position={[-30,0,-50]}>
+          { //this returns the octaves
+            this.state.fftData.map(f=> f.element)
+          }
+          { //these are the lowest acctually
+            this.state.fftData.map(f=> f.high)
+          }
+          { //amed
+            this.state.fftData.map(f=> f.med)
+          }
+          { //high
+            this.state.fftData.map(f=> f.low)
+          }
+          { //very high
+            this.state.fftData.map(f=> f.lowLow)
+          }
 
-        <Entity position={[0,0,-25]}>
-          { //array with the hightest freq to crete red blocks
-            Array.map(this.state.highFreqArry, (n, i) => <Entity
-              key={i}
-              geometry='primitive: box;'
-              material={{color:'red', opacity:n/1000}}
-              position={[i-10 ,n/8,0]}
-            />)
-          }
-          {
-            Array.map(this.state.medFreqArry, (n, i)=> <Entity
-
-            key={i}
-            geometry='primitive: sphere;'
-            material={{color:'#90C3D4'}}
-            position={[(-i+8)*3 ,0 ,n/10]}
-          />)
-          }
-          {
-            Array.map(this.state.highFreqArry, (n, i)=> <Entity
-            key={i}
-            geometry='primitive: torus;'
-            material='color:green; opacity:.5'
-            position={[i-8 ,n/50,n/15]}
-          />)
-          }
-          {/* <Entity geometry={{primitive:'box', depth:100, }} */}
         </Entity>
 
 
