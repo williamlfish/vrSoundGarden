@@ -109,8 +109,8 @@
 
 	    _this.state = {
 	      fftData: [],
+	      octaves: [],
 	      color: 'red',
-	      ourFreq: [],
 	      lowFreqArry: [],
 	      medFreqArry: [],
 	      highFreqArry: [],
@@ -136,10 +136,11 @@
 	      console.log(audio.sampleRate);
 	      //this analyser is used to get data
 	      var analyser = audio.createAnalyser();
-	      analyser.fftSize = 1024;
+	      analyser.fftSize = 4096;
 	      var buffer = analyser.frequencyBinCount;
 	      //that data is pushed to an array
-	      var dataArray = new Uint8Array(buffer);
+	      var dataArray = new Uint8Array(buffer / 4);
+	      console.log(dataArray.length);
 
 	      navigator.mediaDevices.getUserMedia = navigator.mediaDevices.getUserMedia || navigator.mediaDevices.webkitGetUserMedia || navigator.mediaDevices.mozGetUserMedia || navigator.mediaDevices.msGetUserMedia;
 	      navigator.mediaDevices.getUserMedia({ video: false, audio: true }).then(function (stream) {
@@ -150,29 +151,125 @@
 	        var hiCount = 0;
 	        var medCount = 0;
 	        var lowCount = 0;
-
+	        var dataMap = {};
 	        var freqSize = audio.sampleRate / analyser.fftSize;
-	        console.log('freq size is ', freqSize);
 	        setInterval(function () {
-	          analyser.getByteFrequencyData(dataArray);
-	          var lowFreqArry = [];
-	          var medFreqArry = [];
-	          var highFreqArry = [];
-	          dataArray.forEach(function (data, i) {
-	            if (i <= 24) {
-	              highFreqArry.push(data);
-	            } else if (i <= 42) {
-	              medFreqArry.push(data);
-	            } else if (i <= 72) {
-	              lowFreqArry.push(data);
-	            }
-	          });
 
+	          analyser.getByteFrequencyData(dataArray);
+	          var freqArry = [];
+
+	          dataArray.forEach(function (data, i) {
+	            var high = null;
+	            var med = null;
+	            var low = null;
+	            var lowLow = null;
+	            var freq = freqSize * i;
+	            var element = null;
+	            if (i <= 128) {
+	              high = _react2.default.createElement(_aframeReact.Entity, {
+	                key: 'h' + i,
+	                geometry: 'primitive: sphere;',
+	                material: { color: '#56AEB0', opacity: data / 10 },
+	                position: [i - 30, -4 + -(data / 8), -20]
+	              });
+	            } else if (i <= 256) {
+	              med = _react2.default.createElement(_aframeReact.Entity, {
+	                key: 'm' + i,
+	                geometry: 'primitive: sphere;',
+	                material: { color: '#56B056', opacity: data / 10 },
+	                position: [i - 148, -4 - data / 8, -20 + data / 8]
+	              });
+	            } else if (i <= 384) {
+	              low = _react2.default.createElement(_aframeReact.Entity, {
+	                key: 'l' + i,
+	                geometry: 'primitive: box;',
+	                material: { color: '#D4CB4C', opacity: data / 10 },
+	                position: [i - 486, -4 - data / 8, -20 + data / 8]
+	              });
+	            } else if (i <= 512) {
+	              lowLow = _react2.default.createElement(_aframeReact.Entity, {
+	                key: 'll' + i,
+	                geometry: 'primitive: torus;',
+	                material: { color: '#EB7C5E', opacity: data / 10 },
+	                position: [i - 404, -4 - data / 8, -20 + data / 8]
+	              });
+	            }
+	            if (freq <= 30.87) {
+	              element = _react2.default.createElement(_aframeReact.Entity, {
+	                key: i,
+	                geometry: 'primitive: box;',
+	                material: { color: '#FA0230' },
+	                position: [17, data / 15, data / 8]
+	              });
+	            }if (freq <= 61.74 && freq >= 32.70) {
+	              element = _react2.default.createElement(_aframeReact.Entity, {
+	                key: i,
+	                geometry: 'primitive: box;',
+	                material: { color: '#ED6F87', opacity: .5 },
+	                position: [20, data / 15, data / 8]
+	              });
+	            }if (freq <= 123.47 && freq >= 65.41) {
+	              element = _react2.default.createElement(_aframeReact.Entity, {
+	                key: i,
+	                geometry: 'primitive: box;',
+	                material: 'color:#ED6FDA; opacity:.5',
+	                position: [23, data / 15, data / 8]
+	              });
+	            }if (freq <= 246.94 && freq >= 130.81) {
+	              element = _react2.default.createElement(_aframeReact.Entity, {
+	                key: i,
+	                geometry: 'primitive: box;',
+	                material: 'color:#DA6FED; opacity:.5',
+	                position: [26, data / 15, data / 8]
+	              });
+	            }if (freq <= 493.88 && freq >= 261.63) {
+	              element = _react2.default.createElement(_aframeReact.Entity, {
+	                key: i,
+	                geometry: 'primitive: box;',
+	                material: 'color:#936FED; opacity:.5',
+	                position: [29, data / 15, data / 8]
+	              });
+	            }if (freq <= 987.77 && freq >= 523.25) {
+	              element = _react2.default.createElement(_aframeReact.Entity, {
+	                key: i,
+	                geometry: 'primitive: box;',
+	                material: 'color:#6F7AED; opacity:.5',
+	                position: [31, data / 15, data / 8]
+	              });
+	            }if (freq <= 1975.53 && freq >= 1046.50) {
+	              element = _react2.default.createElement(_aframeReact.Entity, {
+	                key: i,
+	                geometry: 'primitive: box;',
+	                material: 'color:#6FA4ED; opacity:.5',
+	                position: [34, data / 15, data / 8]
+	              });
+	            }if (freq <= 3951.07 && freq >= 2093) {
+	              element = _react2.default.createElement(_aframeReact.Entity, {
+	                key: i,
+	                geometry: 'primitive: box;',
+	                material: 'color:#E1F50C; opacity:.5',
+	                position: [37, data / 15, data / 8]
+	              });
+	            }if (freq >= 4186.01) {
+	              element = _react2.default.createElement(_aframeReact.Entity, {
+	                key: i,
+	                geometry: 'primitive: box;',
+	                material: 'color:#F5880C; opacity:.5',
+	                position: [40, data / 15, data / 8]
+	              });
+	            }
+	            freqArry.push({
+	              amount: data,
+	              freq: freq,
+	              element: element,
+	              high: high,
+	              med: med,
+	              low: low,
+	              lowLow: lowLow
+	            });
+	          });
 	          _this2.setState({
-	            fftData: dataArray,
-	            lowFreqArry: lowFreqArry,
-	            medFreqArry: medFreqArry,
-	            highFreqArry: highFreqArry
+	            fftData: freqArry
 	          });
 	        }, 17);
 	        // this.setState({
@@ -187,8 +284,6 @@
 	  }, {
 	    key: 'render',
 	    value: function render() {
-	      var aBall = null;
-
 	      return _react2.default.createElement(
 	        _aframeReact.Scene,
 	        null,
@@ -196,32 +291,26 @@
 	        _react2.default.createElement(_Camera2.default, null),
 	        _react2.default.createElement(
 	          _aframeReact.Entity,
-	          { position: [0, 0, -25] },
-	          //array with the hightest freq to crete red blocks
-	          Array.map(this.state.highFreqArry, function (n, i) {
-	            return _react2.default.createElement(_aframeReact.Entity, {
-	              key: i,
-	              geometry: 'primitive: box;',
-	              material: { color: 'red', opacity: n / 1000 },
-	              position: [i - 10, n / 8, 0]
-	            });
+	          { position: [-30, 0, -50] },
+	          //this returns the octaves
+	          this.state.fftData.map(function (f) {
+	            return f.element;
 	          }),
-	          Array.map(this.state.medFreqArry, function (n, i) {
-	            return _react2.default.createElement(_aframeReact.Entity, {
-
-	              key: i,
-	              geometry: 'primitive: sphere;',
-	              material: { color: '#90C3D4' },
-	              position: [(-i + 8) * 3, 0, n / 10]
-	            });
+	          //these are the lowest acctually
+	          this.state.fftData.map(function (f) {
+	            return f.high;
 	          }),
-	          Array.map(this.state.highFreqArry, function (n, i) {
-	            return _react2.default.createElement(_aframeReact.Entity, {
-	              key: i,
-	              geometry: 'primitive: torus;',
-	              material: 'color:green; opacity:.5',
-	              position: [i - 8, n / 50, n / 15]
-	            });
+	          //amed
+	          this.state.fftData.map(function (f) {
+	            return f.med;
+	          }),
+	          //high
+	          this.state.fftData.map(function (f) {
+	            return f.low;
+	          }),
+	          //very high
+	          this.state.fftData.map(function (f) {
+	            return f.lowLow;
 	          })
 	        )
 	      );
